@@ -6,47 +6,47 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Logging;
+using Dalamud.Utility;
 
 namespace Cosmetic;
 
 public readonly struct CharaPreset
 {
 	private static readonly Dictionary<byte, string> ByteToRace = new() {
-		{ 0, "Unknown" },
-		{ 1, "Hyur" },
-		{ 2, "Elezen" },
-		{ 3, "Lalafell" },
-		{ 4, "Miqo'te" },
-		{ 5, "Roegadyn" },
-		{ 6, "Au Ra" },
-		{ 7, "Hrothgar" },
-		{ 8, "Viera" }
+		{ 0, "未知" },
+		{ 1, "人族" },
+		{ 2, "精灵族" },
+		{ 3, "拉拉菲尔族" },
+		{ 4, "猫魅族" },
+		{ 5, "鲁加族" },
+		{ 6, "敖龙族" },
+		{ 7, "硌狮族" },
+		{ 8, "维埃拉族" }
 	};
 
 	private static readonly Dictionary<byte, string> ByteToTribe = new() {
-		{ 0, "Unknown" },
-		{ 1, "Midlander" },
-		{ 2, "Highlander" },
-		{ 3, "Wildwood" },
-		{ 4, "Duskwight" },
-		{ 5, "Plainsfolk" },
-		{ 6, "Dunesfolk" },
-		{ 7, "Seeker of the Sun" },
-		{ 8, "Keeper of the Moon" },
-		{ 9, "Sea Wolf" },
-		{ 10, "Hellsguard" },
-		{ 11, "Raen" },
-		{ 12, "Xaela" },
-		{ 13, "Helions" },
-		{ 14, "The Lost" },
-		{ 15, "Rava" },
-		{ 16, "Veena" }
+		{ 0, "未知" },
+		{ 1, "中原之民" },
+		{ 2, "高地之民" },
+		{ 3, "森林之民" },
+		{ 4, "黑影之民" },
+		{ 5, "平原之民" },
+		{ 6, "沙漠之民" },
+		{ 7, "逐日之民" },
+		{ 8, "护月之民" },
+		{ 9, "北洋之民" },
+		{ 10, "红焰之民" },
+		{ 11, "晨曦之民" },
+		{ 12, "暮晖之民" },
+		{ 13, "掠日之民" },
+		{ 14, "迷踪之民" },
+		{ 15, "密林之民" },
+		{ 16, "山林之民" }
 	};
 	
 	public readonly byte[] CustomizeData;
 	
 	private readonly int _number;
-	private readonly string _description;
 
 	private CharaPreset(byte[] buffer, int fileNumber)
 	{
@@ -56,28 +56,19 @@ public readonly struct CharaPreset
 		_number = fileNumber;
 		memoryStream.Seek(16L, 0);
 		CustomizeData = binaryReader.ReadBytes(0x1A);
-		memoryStream.Seek(48L, 0);
-		_description = Regex.Replace(Encoding.ASCII.GetString(
-			binaryReader.ReadBytes(0xA4)), "(?![ -~]|\\r|\\n).", "");
-		
-		if (_description.Length > 0)
-			return;
-		
-		_description = "No Description.";
 	}
 
 	public override string ToString()
 	{
 		return $"(#{_number}) " +
 		       $"{ByteToRace[CustomizeData[(int)CustomizeIndex.Race]]} - {ByteToTribe[CustomizeData[(int)CustomizeIndex.Tribe]]} " +
-		       $"{(CustomizeData[(int)CustomizeIndex.Gender] == 1 ? "♀" : "♂")} - {_description}";
+		       $"{(CustomizeData[(int)CustomizeIndex.Gender] == 1 ? "♀" : "♂")}";
 	}
 	
-	public static List<CharaPreset> RetrieveAll()
+	public static List<CharaPreset> RetrieveAll(Plugin plugin)
 	{
 		var presetDataList = new List<CharaPreset>();
-		var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "My Games",
-			"FINAL FANTASY XIV - A Realm Reborn");
+		var path = plugin.Config.GameSaveFile;
 		
 		if (!Directory.Exists(path))
 		{

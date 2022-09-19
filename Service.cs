@@ -3,6 +3,7 @@ using Dalamud.Game;
 using Dalamud.Game.ClientState;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.Game.Command;
+using Dalamud.Game.Gui;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 
@@ -25,4 +26,7 @@ internal class Service
 
 	[PluginService, RequiredVersion("1.0")] 
 	internal static  ClientState ClientState { get; private set; } = null!;
+
+	[PluginService, RequiredVersion("1.0")]
+	internal static ChatGui ChatGui { get; private set; } = null!;
 }

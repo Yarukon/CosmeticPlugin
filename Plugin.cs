@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -55,7 +56,7 @@ public class Plugin : IDalamudPlugin
 	private bool _lastWasModified;
 	private bool _lastWasPlayer;
 	private readonly byte[] _shangTsung = new byte[28];
-	private bool _hasSoulData;
+	public bool _hasSoulData;
 
 	private delegate IntPtr CharacterInitialize(IntPtr actorPtr, IntPtr customizeDataPtr);
 	private delegate IntPtr CharacterIsMounted(IntPtr actor);
@@ -86,12 +87,12 @@ public class Plugin : IDalamudPlugin
 		Service.Interface.UiBuilder.OpenConfigUi += OpenConfigWindow;
 		
 		Service.Commands.AddHandler("/xlcosmetic", new CommandInfo(OnCommand) {
-			HelpMessage = "Opens the Cosmetic settings window.",
+			HelpMessage = "打开Cosmetic设置窗口.",
 			ShowInHelp = true
 		});
 		
 		Service.Commands.AddHandler("/stealsoul", new CommandInfo(OnCommand) {
-			HelpMessage = "Transform into/steal the soul of a targeted player.",
+			HelpMessage = "变形/偷取目标玩家的灵魂.",
 			ShowInHelp = true
 		});
 
@@ -107,7 +108,7 @@ public class Plugin : IDalamudPlugin
 		_flagSlotUpdateHook ??= Hook<FlagSlotUpdate>.FromAddress(flagSlotPtr, FlagSlotUpdateDetour);
 		_flagSlotUpdateHook.Enable();
 		
-		CharaPresets = CharaPreset.RetrieveAll();
+		CharaPresets = CharaPreset.RetrieveAll(this);
 		RefreshLocalPlayer();
 	}
 
@@ -187,7 +188,7 @@ public class Plugin : IDalamudPlugin
 			
 			val |= (int)InvisFlag;
 			Marshal.WriteInt32(renderToggleAddr, val);
-			await Task.Delay(100);
+			await Task.Delay(300);
 			val &= ~(int)InvisFlag;
 			Marshal.WriteInt32(renderToggleAddr, val);
 		}
@@ -209,14 +210,57 @@ public class Plugin : IDalamudPlugin
 				return;
 			
 			Array.Copy(chara.Customize, _shangTsung, 28);
-			
-			_hasSoulData = true;
+
+            _hasSoulData = true;
 			RefreshLocalPlayer();
 		} 	
 		catch (Exception ex)
 		{
 			PluginLog.LogError(ex.ToString());
 		}
+	}
+
+	// From Anamensis
+	public void SaveShangTsungData(string filePath)
+	{
+		byte[] saveData = new byte[32];
+		Array.Copy(_shangTsung, saveData, _shangTsung.Length);
+
+		// Unix time
+        byte[] unixTime = BitConverter.GetBytes(DateTimeOffset.Now.ToUnixTimeSeconds());
+        if (!BitConverter.IsLittleEndian)
+            Array.Reverse(unixTime);
+        Array.Copy(unixTime, 0, saveData, 0x1C, 4);
+
+        // Calculate checksum
+        int checksum = 0;
+        for (int i = 0; i < saveData.Length; i++)
+            checksum ^= saveData[i] << (i % 24);
+
+        byte[] chkDigest = BitConverter.GetBytes(checksum);
+        if (!BitConverter.IsLittleEndian)
+            Array.Reverse(chkDigest);
+
+		// Save data to buffer
+        byte[] buffer = new byte[0xD4];
+
+        using MemoryStream stream = new MemoryStream(buffer);
+        using BinaryWriter writer = new BinaryWriter(stream);
+
+        writer.Write(0x2013FF14); // Magic
+        writer.Write(0x03);  // Version
+        writer.Seek(0x08, 0);
+        writer.Write(chkDigest); // Checksum
+        writer.Seek(0x10, 0);
+        writer.Write(saveData); // Appearance + Timestamp
+
+        using var fileStream = File.Create(filePath);
+		fileStream.Write(buffer, 0, buffer.Length);
+    }
+
+	public void ChatLog(string message)
+	{
+		Service.ChatGui.Print($"[{Name}] {message}");
 	}
 
 	private static EquipData MapRacialEquipModels(Race race, int gender, EquipData eq)
@@ -229,14 +273,16 @@ public class Plugin : IDalamudPlugin
 		return eq;
 	}
 
-	public void UpdateConfig(bool shouldChangeSelf, int selectedCharaPreset, bool enableShangTsung)
+	public void UpdateConfig(string gameDataFolder, bool shouldChangeSelf, int selectedCharaPreset, bool enableShangTsung)
 	{
 		var unsavedChanges = shouldChangeSelf != Config.ShouldChangeSelf ||
 		                     selectedCharaPreset != Config.SelectedCharaPreset ||
-		                     enableShangTsung != Config.EnableShangTsung;
+		                     enableShangTsung != Config.EnableShangTsung ||
+                             gameDataFolder != Config.GameSaveFile;
 
 		if (!unsavedChanges) return;
 
+		Config.GameSaveFile = gameDataFolder;
 		Config.ShouldChangeSelf = shouldChangeSelf;
 		Config.SelectedCharaPreset = Math.Clamp(selectedCharaPreset, 0, CharaPresets.Count - 1);
 		Config.EnableShangTsung = enableShangTsung;
@@ -247,7 +293,7 @@ public class Plugin : IDalamudPlugin
 	
 	private void OpenConfigWindow()
 	{
-		CharaPresets = CharaPreset.RetrieveAll();
+		CharaPresets = CharaPreset.RetrieveAll(this);
 		_windowSystem.GetWindow(nameof(Cosmetic))!.IsOpen = true;
 	}
 
