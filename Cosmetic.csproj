@@ -2,9 +2,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <Authors>Woufi Ufi</Authors>
-        <Version>0.0.0.1</Version>
-        <Description>Cosmetic.</Description>
-        <PackageProjectUrl>https://github.com/goatcorp/SamplePlugin</PackageProjectUrl>
+        <Version>0.1.0.0</Version>
+        <Description>Change your race and your face based on your saved presets!</Description>
+        <PackageProjectUrl>https://github.com/whooziwhite/CosmeticPlugin</PackageProjectUrl>
     </PropertyGroup>
 
     <PropertyGroup>
