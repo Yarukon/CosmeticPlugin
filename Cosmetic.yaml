@@ -1,6 +1,7 @@
 ﻿name: Cosmetic
-author: Renji, updated by Woufi Ufi
+author: Renji, updated by whoozi
 description: |-
   Based off of the award-winning and critically acclaimed Cosmetic and OopsAllLalafells.
 punchline: |-
   Change your race and your face based on your saved presets!
+repo_url: https://github.com/whoozi/CosmeticPlugin
