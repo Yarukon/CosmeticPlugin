@@ -47,6 +47,7 @@ public readonly struct CharaPreset
     public readonly byte[] CustomizeData;
 
     private readonly int _number;
+    private readonly string _description;
 
     private CharaPreset(byte[] buffer, int fileNumber)
     {
@@ -56,13 +57,20 @@ public readonly struct CharaPreset
         _number = fileNumber;
         memoryStream.Seek(16L, 0);
         CustomizeData = binaryReader.ReadBytes(0x1A);
+        memoryStream.Seek(48L, 0);
+        _description = Encoding.UTF8.GetString(binaryReader.ReadBytes(0xA4)).Replace("\0", "").Replace("\r", "").Replace("\n", "");
+
+        if (_description.IsNullOrEmpty() || _description.IsNullOrWhitespace())
+        {
+            _description = "没有描述.";
+        }
     }
 
     public override string ToString()
     {
         return $"(#{_number}) " +
                $"{ByteToRace[CustomizeData[(int)CustomizeIndex.Race]]} - {ByteToTribe[CustomizeData[(int)CustomizeIndex.Tribe]]} " +
-               $"{(CustomizeData[(int)CustomizeIndex.Gender] == 1 ? "♀" : "♂")}";
+               $"{(CustomizeData[(int)CustomizeIndex.Gender] == 1 ? "♀" : "♂")} - {_description}";
     }
 
     public static List<CharaPreset> RetrieveAll(Plugin plugin)
