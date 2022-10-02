@@ -286,7 +286,10 @@ public class Plugin : IDalamudPlugin
 
         Config.GameSaveFile = gameDataFolder;
         Config.ShouldChangeSelf = shouldChangeSelf;
-        Config.SelectedCharaPreset = Math.Clamp(selectedCharaPreset, 0, CharaPresets.Count - 1);
+        if (CharaPresets.Count > 0)
+        {
+            Config.SelectedCharaPreset = Math.Clamp(selectedCharaPreset, 0, CharaPresets.Count - 1);
+        }
         Config.EnableShangTsung = enableShangTsung;
         Config.Save();
 
