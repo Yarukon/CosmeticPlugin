@@ -104,12 +104,37 @@ public class ConfigWindow : Window, IDisposable
                     return;
                 }
 
-                _plugin.SaveShangTsungData(path);
+                _plugin.SaveAsPreset(_plugin._shangTsung, path);
 
                 _plugin.ChatLog($"已保存到预设 #{fileNum}!");
 
                 _plugin.CharaPresets = CharaPreset.RetrieveAll(_plugin);
             }
+        }
+
+        if (ImGui.Button("保存自身外观为预设 (自动增位 Glamourer搭配使用)"))
+        {
+            int fileNum = _plugin.CharaPresets.Count + 1;
+            var path = Path.Combine(_plugin.Config.GameSaveFile, $"FFXIV_CHARA_{fileNum:D2}.dat");
+            if (File.Exists(path))
+            {
+                _plugin.ChatLog($"预设 #{fileNum} 文件已存在, 取消保存!");
+                return;
+            }
+
+            var ply = _plugin.LocalPlayer;
+
+            if (ply == null)
+            {
+                _plugin.ChatLog($"玩家对象为null, 这不该发生的!");
+                return;
+            }
+
+            _plugin.SaveAsPreset(ply.Customize, path);
+
+            _plugin.ChatLog($"已保存到预设 #{fileNum}!");
+
+            _plugin.CharaPresets = CharaPreset.RetrieveAll(_plugin);
         }
 
 

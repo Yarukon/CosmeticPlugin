@@ -55,7 +55,7 @@ public class Plugin : IDalamudPlugin
     private Race _lastPlayerRace;
     private bool _lastWasModified;
     private bool _lastWasPlayer;
-    private readonly byte[] _shangTsung = new byte[28];
+    public readonly byte[] _shangTsung = new byte[28];
     public bool _hasSoulData;
 
     private delegate IntPtr CharacterInitialize(IntPtr actorPtr, IntPtr customizeDataPtr);
@@ -66,7 +66,7 @@ public class Plugin : IDalamudPlugin
     private readonly Hook<CharacterIsMounted> _charaMountedHook;
     private readonly Hook<FlagSlotUpdate> _flagSlotUpdateHook;
 
-    private PlayerCharacter? LocalPlayer => _localPlayer ??= Service.ClientState.LocalPlayer;
+    public PlayerCharacter? LocalPlayer => _localPlayer ??= Service.ClientState.LocalPlayer;
 
     private readonly WindowSystem _windowSystem = new(nameof(Cosmetic));
 
@@ -223,10 +223,10 @@ public class Plugin : IDalamudPlugin
     }
 
     // From Anamensis
-    public void SaveShangTsungData(string filePath)
+    public void SaveAsPreset(byte[] appearanceData, string filePath)
     {
         byte[] saveData = new byte[32];
-        Array.Copy(_shangTsung, saveData, _shangTsung.Length);
+        Array.Copy(appearanceData, saveData, appearanceData.Length);
 
         // Unix time
         byte[] unixTime = BitConverter.GetBytes(DateTimeOffset.Now.ToUnixTimeSeconds());
