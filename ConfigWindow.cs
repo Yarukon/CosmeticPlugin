@@ -30,7 +30,7 @@ public class ConfigWindow : Window, IDisposable
         var selectedCharaPreset = _plugin.Config.SelectedCharaPreset;
         var enableShangTsung = _plugin.Config.EnableShangTsung;
 
-        if (selectedCharaPreset > _plugin.CharaPresets.Count - 1)
+        if (_plugin.CharaPresets.Count > 0 && selectedCharaPreset > _plugin.CharaPresets.Count - 1)
         {
             PluginLog.Warning("SelectedCharaPreset Out of Range! Reset to 0!");
             selectedCharaPreset = 0;
