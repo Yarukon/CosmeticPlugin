@@ -81,6 +81,7 @@ public readonly struct CharaPreset
         if (!Directory.Exists(path))
         {
             PluginLog.Error("Could not find FFXIV Directory: " + path);
+            Plugin.pathValid = false;
             return presetDataList;
         }
 
@@ -88,6 +89,7 @@ public readonly struct CharaPreset
                                 let filenum = int.Parse(new string(Path.GetFileNameWithoutExtension(file).Where(char.IsDigit).ToArray()))
                                 select new CharaPreset(File.ReadAllBytes(file), filenum));
 
+        Plugin.pathValid = true;
         return presetDataList;
     }
 }

@@ -50,6 +50,12 @@ public class ConfigWindow : Window, IDisposable
             Process.Start("explorer.exe", @_plugin.Config.GameSaveFile);
         }
 
+        if (!Plugin.pathValid)
+        {
+            ImGui.TextColored(new System.Numerics.Vector4(255, 0, 0, 255), "数据文件夹无效, 请输入其他路径!");
+            return;
+        }
+
         ImGui.BeginDisabled(enableShangTsung);
         {
             ImGui.Checkbox("更改自己", ref shouldChangeSelf);

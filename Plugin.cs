@@ -68,6 +68,8 @@ public class Plugin : IDalamudPlugin
 
     public PlayerCharacter? LocalPlayer => _localPlayer ??= Service.ClientState.LocalPlayer;
 
+    public static bool pathValid = false;
+
     private readonly WindowSystem _windowSystem = new(nameof(Cosmetic));
 
     static Plugin()
