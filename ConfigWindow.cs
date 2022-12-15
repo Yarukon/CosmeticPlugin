@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Numerics;
 using Dalamud.Game.Gui;
 using Dalamud.Interface.Windowing;
 using Dalamud.Logging;
@@ -23,9 +24,10 @@ public class ConfigWindow : Window, IDisposable
         GC.SuppressFinalize(this);
     }
 
+    public readonly Vector4 COLOR_RED = new Vector4(255, 0, 0, 255);
+
     public override void Draw()
     {
-        var gameDataFolder = _plugin.Config.GameSaveFile;
         var shouldChangeSelf = _plugin.Config.ShouldChangeSelf;
         var selectedCharaPreset = _plugin.Config.SelectedCharaPreset;
         var enableShangTsung = _plugin.Config.EnableShangTsung;
@@ -36,9 +38,9 @@ public class ConfigWindow : Window, IDisposable
             selectedCharaPreset = 0;
         }
 
-        ImGui.InputText("玩家数据路径##GameSaveFolder", ref gameDataFolder, 256);
+        ImGui.InputText("玩家数据路径##GameSaveFolder", ref _plugin.Config.GameSaveFile, 256);
 
-        if (ImGui.Button("手动刷新"))
+        if (ImGui.Button("刷新数据"))
         {
             _plugin.CharaPresets = CharaPreset.RetrieveAll(_plugin);
         }
@@ -52,7 +54,7 @@ public class ConfigWindow : Window, IDisposable
 
         if (!Plugin.pathValid)
         {
-            ImGui.TextColored(new System.Numerics.Vector4(255, 0, 0, 255), "数据文件夹无效, 请输入其他路径!");
+            ImGui.TextColored(COLOR_RED, "数据文件夹无效, 请输入其他路径!");
             return;
         }
 
@@ -144,6 +146,6 @@ public class ConfigWindow : Window, IDisposable
         }
 
 
-        _plugin.UpdateConfig(gameDataFolder, shouldChangeSelf, selectedCharaPreset, enableShangTsung);
+        _plugin.UpdateConfig(shouldChangeSelf, selectedCharaPreset, enableShangTsung);
     }
 }

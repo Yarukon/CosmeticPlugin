@@ -277,16 +277,14 @@ public class Plugin : IDalamudPlugin
         return eq;
     }
 
-    public void UpdateConfig(string gameDataFolder, bool shouldChangeSelf, int selectedCharaPreset, bool enableShangTsung)
+    public void UpdateConfig(bool shouldChangeSelf, int selectedCharaPreset, bool enableShangTsung)
     {
         var unsavedChanges = shouldChangeSelf != Config.ShouldChangeSelf ||
                              selectedCharaPreset != Config.SelectedCharaPreset ||
-                             enableShangTsung != Config.EnableShangTsung ||
-                             gameDataFolder != Config.GameSaveFile;
+                             enableShangTsung != Config.EnableShangTsung;
 
         if (!unsavedChanges) return;
 
-        Config.GameSaveFile = gameDataFolder;
         Config.ShouldChangeSelf = shouldChangeSelf;
         Config.SelectedCharaPreset = CharaPresets.Count > 0 ? Math.Clamp(selectedCharaPreset, 0, CharaPresets.Count - 1) : 0;
         Config.EnableShangTsung = enableShangTsung;
